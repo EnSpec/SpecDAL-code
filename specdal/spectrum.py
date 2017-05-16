@@ -25,11 +25,13 @@ class Spectrum(object):
     --------
     """
     
-    def __init__(self, name, data=None, resampled=False, metadata=None, mask=False):
+    def __init__(self, name, data=None, resampled=False, stitched=False,
+                 metadata=None, mask=False):
         if data is not None:
             self.data = data
         self.name = name
         self.resampled = resampled
+        self.stitched = stitched
         self.mask = mask
         if metadata is not None:
             self.metadata = metadata
@@ -62,6 +64,14 @@ class Spectrum(object):
         self._resampled = value
 
     @property
+    def stitched(self):
+        return self._stitched
+
+    @stitched.setter
+    def stitched(self, value):
+        self._stitched = value
+
+    @property
     def mask(self):
         if hasattr(self, "_mask"):        
             return self._mask
@@ -85,3 +95,47 @@ class Spectrum(object):
         if isinstance(value, Iterable):
             if len(value) == 2:
                 self._metadata[value[0]] = value[1]
+
+    def resample(self, method="slinear"):
+        METHODS = ('slinear', 'cubic')
+        if method not in METHODS:
+            msg = " ".join(["ERROR:", method, "not supported.\n"])
+            sys.stderr.write(msg)
+            return
+
+        wavelengths = pd.Series(self.data.index)
+        n = len(wavelengths)
+
+        # spectrum may have overlapping sequences
+        head_positions = [0] + list(wavelengths[wavelengths.diff() < 0].index)
+        tail_positions = list(wavelengths[wavelengths.diff() < 0].index) + [n]
+
+        dataframes = []
+        for sequence in zip(head_positions, tail_positions):
+            # subset the dataframe corresponding to the sequence
+            head_pos, tail_pos = sequence
+            dataframe = self.data.iloc[head_pos:tail_pos].copy()
+            # expand index to all integers
+            int_index = pd.Index(np.arange(np.round(wavelengths[head_pos]),
+                                           np.round(wavelengths[tail_pos-1]) + 1),
+                                 name=self.data.index.name)
+            temp_index = dataframe.index.union(int_index)
+            dataframe = dataframe.reindex(temp_index)
+            # interpolate 
+            dataframe = dataframe.interpolate(method=method)
+            # select the integer indices
+            dataframes.append(dataframe.loc[int_index])
+
+        self.data = pd.concat(dataframes)
+        self.resampled = True
+
+    def stitch(self, method="mean"):
+        METHODS = ('mean')
+        if method not in METHODS:
+            msg = " ".join(["ERROR:", method, "not supported.\n"])
+            sys.stderr.write(msg)
+            return
+
+        if method == "mean":
+            self.data = self.data.groupby(level=0, axis=0).mean()
+        self.stitched = True

@@ -54,13 +54,4 @@ class Collection(object):
         def group_fcn(name):
             return separator.join([name.split(separator)[e] for e in element_inds])
         self.group = self.data.groupby(by=group_fcn, axis=1)
-        return self.group
-
-#    def group_by_separator(self, separator, element_inds):
-#        def group_fcn(name):
-#            return separator.join([name.split(separator)[e] for e in element_inds])
-#        self.group = self.data.groupby(by=group_fcn, axis=1)
-#        return self.group
-    
-    def plot(self):
-        pass
+        return self.group    

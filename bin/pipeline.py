@@ -10,8 +10,6 @@ sys.path.insert(0, os.path.abspath(".."))
 from specdal import spectrum as s
 from specdal import collection as c
 from specdal import readers as r
-from specdal import resamplers as res
-from specdal import stitchers as sti
 
 # parse command line args
 parser = argparse.ArgumentParser(description="SpecDAL Pipeline")
@@ -47,7 +45,7 @@ for f in os.listdir(args.indir):
 # resample
 if args.resampler:
     for spec in coll.spectra:
-        spec = res.resample(spec, method=args.resampler)
+        spec.resample(method=args.resampler)
 
 # stitch
 if args.stitcher:
