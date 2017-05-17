@@ -94,6 +94,10 @@ def read_asd(filepath, name=None):
             wavestop = wavestart + num_channels*wavestep - 1
             waves = np.linspace(wavestart, wavestop, num_channels)
 
+            # read splice wavelength
+            splice1 = struct.unpack("f", binconts[444:(444 + 4)])[0]
+            splice2 = struct.unpack("f", binconts[448:(448 + 4)])[0]
+            
             # read data
             data_format = struct.unpack("B", binconts[199:(199 + 1)])[0]
             fmt = "f"*num_channels
@@ -131,7 +135,8 @@ def read_asd(filepath, name=None):
 
             # metadata
             meta = {
-                'type':spectrum_type
+                'type':spectrum_type,
+                'splice':[splice1, splice2]
             }
             
             # convert data into spectrum and return

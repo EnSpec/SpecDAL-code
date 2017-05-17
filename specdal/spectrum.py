@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd
 from collections import Iterable
@@ -96,7 +97,11 @@ class Spectrum(object):
             if len(value) == 2:
                 self._metadata[value[0]] = value[1]
 
+    ################################################################################
+    # methods on spectral data
+    
     def resample(self, method="slinear"):
+        """ interpolate the data into integer (1nm) wavelengths """
         METHODS = ('slinear', 'cubic')
         if method not in METHODS:
             msg = " ".join(["ERROR:", method, "not supported.\n"])
@@ -129,13 +134,48 @@ class Spectrum(object):
         self.data = pd.concat(dataframes)
         self.resampled = True
 
-    def stitch(self, method="mean"):
-        METHODS = ('mean')
+    def stitch(self, method="mean", waves=None, reference=None):
+        METHODS = ('mean', 'jump')
         if method not in METHODS:
             msg = " ".join(["ERROR:", method, "not supported.\n"])
             sys.stderr.write(msg)
             return
-
+        
         if method == "mean":
             self.data = self.data.groupby(level=0, axis=0).mean()
+
+        if method == "jump":
+            self.stitch_jump_correct(waves, reference)
+
+    def stitch_jump_correct(self, waves, reference):
+        # if asd, get the locations from the metadata
+        # stop if overlap exists
+        def get_sequence(wave):
+            # this function might need to be more generic: utils.py?
+            for i, w in enumerate(waves):
+                if wave <= w:
+                    return i
+            return i+1
+        def translate_y(ref, mov, right=True):
+            # translates the mov dataframe to stitch with ref
+            # what happens if multiple columns?
+            if right:
+                diff = ref.iloc[-1] - mov.iloc[0]
+            else:
+                diff = ref.iloc[0] - mov.iloc[-1]
+            mov = mov + diff
+            self.data.update(mov)
+            
+        groups = self.data.groupby(get_sequence)
+        
+        for i in range(reference, groups.ngroups-1, 1):
+            translate_y(groups.get_group(i),
+                        groups.get_group(i+1),
+                        right=True)
+
+        for i in range(reference, 0, -1):
+            translate_y(groups.get_group(i),
+                        groups.get_group(i-1),
+                        right=False)
+            
         self.stitched = True
