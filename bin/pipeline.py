@@ -40,70 +40,69 @@ for d in (outdir, figdir, datadir):
 ################################################################################
 # read files
 print("################################################################################")
-print("READING...\n")
+print("READING...")
 coll = c.Collection()
 for f in os.listdir(args.indir):
-    print("reading", f)
+    print("reading", f, end="...")
     filepath = os.path.join(args.indir, f)
     spec = r.read(filepath)
     coll.add_spectrum(spec)
-print("reading: DONE")
+    print("DONE")
 
 # resample
 if args.resampler:
     print("################################################################################")
-    print("RESAMPLING...\n")
+    print("RESAMPLING...")
     for spec in coll.spectra:
-        print("resampling", spec.name)
+        print("resampling", spec.name, end="...")
         spec.resample(method=args.resampler)
-    print("resampling: DONE")
+        print("DONE")
 
 # jump correct
 if args.jump_stitcher:
     print("################################################################################")
-    print("JUMP CORRECTING...\n")
+    print("JUMP CORRECTING...")
     args.jump_stitcher = list(map(int, args.jump_stitcher))
     reference = args.jump_stitcher[0]
     splice = args.jump_stitcher[1:]
     for spec in coll.spectra:
         # if asd: waves = spec.metadata['splice']
+        print("Jump correcting", spec.name, end="...")
         spec.stitch(method='jump', waves=splice, reference=reference)
-    print("jump correcting: DONE")
+        print("DONE")
 
 # stitch
 if args.stitcher:
     print("################################################################################")
-    print("STITCHING...\n")
+    print("STITCHING...")
     for spec in coll.spectra:
+        print("Stitching", spec.name, end="...")
         spec = spec.stitch(method=args.stitcher)
-    print("stitching: DONE")
+        print("DONE")
         
 
 # group by
 if args.group_by_separator:
     print("################################################################################")
-    print("GROUPING...\n")
+    print("GROUPING...")
     groups = coll.group_by_separator(*args.group_by_separator)
-    print("grouping: DONE")
-
-# save result
-print("################################################################################")
-print("SAVING...\n")
-for gname, gdata in groups:
-    figpath = os.path.join(figdir, gname + '.png')
-    datapath = os.path.join(datadir, gname + '.csv')
-    # create figure
-    ax = gdata.plot(title=gname)
-    ax.set_ylabel('reflectance %')
-    plt.savefig(os.path.join(figpath), bbox_inches='tight')
-    plt.close()
-    # save data
-    gdata.transpose().to_csv(datapath)
+    for gname, gdata in groups:
+        print("Group:", gname, end='...')
+        figpath = os.path.join(figdir, gname + '.png')
+        datapath = os.path.join(datadir, gname + '.csv')
+        # create figure
+        ax = gdata.plot(title=gname)
+        ax.set_ylabel('reflectance %')
+        plt.savefig(os.path.join(figpath), bbox_inches='tight')
+        plt.close()
+        # save data
+        gdata.transpose().to_csv(datapath)
+        print("DONE")
 
 # mask
 print("################################################################################")
-print("SAVING MASK...\n")
+print("SAVING MASK...")
 # save mask
 maskpath = os.path.join(outdir, 'mask.csv')
 coll.mask.to_csv(maskpath)
-
+print("DONE")
