@@ -26,9 +26,13 @@ class Collection(object):
     def data(self):
         if not hasattr(self, '_spectrums'):
             return
-        return pd.concat([s.data["pct_reflect"].rename(s.name) for s in
+        
+        colnames = [s.name for s in self._spectrums if "pct_reflect" in s.data]
+        data = pd.concat([s.data["pct_reflect"] for s in
                           self._spectrums if "pct_reflect" in s.data],
                          axis=1)
+        data.columns = colnames
+        return data
 
     def add_spectrum(self, spectrum):
         '''Consider OrderedDict rather than list (i.e. for setting mask)'''
