@@ -20,16 +20,17 @@ class Collection(object):
     def spectra(self):
         if not hasattr(self, '_spectrums'):
             return
-        return self._spectrums
+        return list(self._spectrums.values())
 
     @property
     def data(self):
         if not hasattr(self, '_spectrums'):
             return
         
-        colnames = [s.name for s in self._spectrums if "pct_reflect" in s.data]
-        data = pd.concat([s.data["pct_reflect"] for s in
-                          self._spectrums if "pct_reflect" in s.data],
+        colnames = [name for name, spec in self._spectrums.items()
+                    if "pct_reflect" in spec.data]
+        data = pd.concat([spec.data["pct_reflect"] for name, spec in
+                          self._spectrums.items() if "pct_reflect" in spec.data],
                          axis=1)
         data.columns = colnames
         return data
@@ -37,19 +38,23 @@ class Collection(object):
     def add_spectrum(self, spectrum):
         '''Consider OrderedDict rather than list (i.e. for setting mask)'''
         if not hasattr(self, '_spectrums'):
-            self._spectrums = []
+            self._spectrums = OrderedDict()
         if isinstance(spectrum, Spectrum):
-            self._spectrums.append(spectrum)
-        if isinstance(spectrum, list):
-            [self._spectrums.append(item) for item in spectrum if
-             isinstance(spectrum, Spectrum)]
+            if spectrum.name in self._spectrums:
+                # duplicate name
+                print(spectrum.name, "is already in collection")
+                return
+            self._spectrums[spectrum.name] = spectrum
+        # if isinstance(spectrum, list):
+        #     [self._spectrums.append(item) for item in spectrum if
+        #      isinstance(spectrum, Spectrum)]
 
     @property
     def mask(self):
         if not hasattr(self, '_spectrums'):
             return
-        return pd.DataFrame(data=[s.mask for s in self._spectrums],
-                            index=[s.name for s in self._spectrums],
+        return pd.DataFrame(data=[s.mask for _, s in self._spectrums.items()],
+                            index=[s.name for _, s in self._spectrums.items()],
                             columns=['mask'])
 
     def group_by_separator(self, *args):
