@@ -140,7 +140,7 @@ def read_asd(filepath, name=None):
             }
             
             # convert data into spectrum and return
-            return Spectrum(name=name, data=data, mask=mask, metadata=meta)
+            return Spectrum(name=name, fmt="asd", data=data, mask=mask, metadata=meta)
 
 
 def read_sig(filepath, name=None):
@@ -163,7 +163,7 @@ def read_sig(filepath, name=None):
                                          sep="\s+", index_col=0,
                                          header=None, names=colnames
                     )
-                    return Spectrum(name=name, data=data, metadata=meta)
+                    return Spectrum(name=name, fmt="sig", data=data, metadata=meta)
                 else:
                     meta[line[0]] = line[1]
 
@@ -198,7 +198,7 @@ def read_sed(filepath, name=None):
                                 for column in data.columns]
                 data = data.set_index("wavelength")
                 
-                return Spectrum(name=name, data=data, mask=mask, metadata=meta)
+                return Spectrum(name=name, fmt="sed", data=data, mask=mask, metadata=meta)
 
             else:
                 if len(line) > 1:

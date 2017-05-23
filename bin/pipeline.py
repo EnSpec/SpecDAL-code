@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath(".."))
 from specdal import spectrum as s
-from specdal import collection as c
+from specdal import session
 from specdal import readers as r
 
 # parse command line args
@@ -41,19 +41,19 @@ for d in (outdir, figdir, datadir):
 # read files
 print("################################################################################")
 print("READING...")
-coll = c.Collection()
+sess = session.Session()
 for f in os.listdir(args.indir):
     print("reading", f, end="...")
     filepath = os.path.join(args.indir, f)
     spec = r.read(filepath)
-    coll.add_spectrum(spec)
+    sess.add_spectrum(spec)
     print("DONE")
 
 # resample
 if args.resampler:
     print("################################################################################")
     print("RESAMPLING...")
-    for spec in coll.spectra:
+    for spec in sess.spectrums:
         print("resampling", spec.name, end="...")
         spec.resample(method=args.resampler)
         print("DONE")
@@ -65,7 +65,7 @@ if args.jump_stitcher:
     args.jump_stitcher = list(map(int, args.jump_stitcher))
     reference = args.jump_stitcher[0]
     splice = args.jump_stitcher[1:]
-    for spec in coll.spectra:
+    for spec in sess.spectrums:
         # if asd: waves = spec.metadata['splice']
         print("Jump correcting", spec.name, end="...")
         spec.stitch(method='jump', waves=splice, reference=reference)
@@ -75,7 +75,7 @@ if args.jump_stitcher:
 if args.stitcher:
     print("################################################################################")
     print("STITCHING...")
-    for spec in coll.spectra:
+    for spec in sess.spectrums:
         print("Stitching", spec.name, end="...")
         spec = spec.stitch(method=args.stitcher)
         print("DONE")
@@ -85,7 +85,7 @@ if args.stitcher:
 if args.group_by_separator:
     print("################################################################################")
     print("GROUPING...")
-    groups = coll.group_by_separator(*args.group_by_separator)
+    groups = sess.group_by_separator(*args.group_by_separator)
     for gname, gdata in groups:
         print("Group:", gname, end='...')
         figpath = os.path.join(figdir, gname + '.png')
@@ -104,5 +104,5 @@ print("#########################################################################
 print("SAVING MASK...")
 # save mask
 maskpath = os.path.join(outdir, 'mask.csv')
-coll.mask.to_csv(maskpath)
+sess.mask.to_csv(maskpath)
 print("DONE")

@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import pandas as pd
+import functools
 from collections import Iterable
 
 class Spectrum(object):
@@ -26,16 +27,22 @@ class Spectrum(object):
     --------
     """
     
-    def __init__(self, name, data=None, resampled=False, stitched=False,
-                 metadata=None, mask=False):
-        if data is not None:
-            self.data = data
+    def __init__(self, name, fmt=None, mask=False, resampled=False, stitched=False,
+                 group=None, data=None, metadata=None):
         self.name = name
+        self.fmt = fmt
+        self.mask = mask
         self.resampled = resampled
         self.stitched = stitched
-        self.mask = mask
+        if group is None:
+            self.group = name
+        else:
+            self.group = group
+        if data is not None:
+            self.data = data
         if metadata is not None:
             self.metadata = metadata
+        self.history = []
 
     @property
     def name(self):
@@ -46,15 +53,22 @@ class Spectrum(object):
         self._name = value
 
     @property
-    def data(self):
-        return self._data
+    def fmt(self):
+        return self._fmt
 
-    @data.setter
-    def data(self, value):
-        if isinstance(value, pd.DataFrame):
-            self._data = value
-        else:
-            print("Error: data must be a pd.DataFrame object")
+    @fmt.setter
+    def fmt(self, value):
+        if value not in ("asd", "sed", "sig"):
+            self.mask = True
+        self._fmt = value
+        
+    @property
+    def mask(self):
+        return self._mask
+
+    @mask.setter
+    def mask(self, value):
+        self._mask = value
 
     @property
     def resampled(self):
@@ -73,35 +87,54 @@ class Spectrum(object):
         self._stitched = value
 
     @property
-    def mask(self):
-        if hasattr(self, "_mask"):        
-            return self._mask
+    def group(self):
+        return self._group
 
-    @mask.setter
-    def mask(self, value):
-        self._mask = value
+    @group.setter
+    def group(self, value):
+        self._group = value
+        
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        if isinstance(value, pd.DataFrame):
+            self._data = value
+        else:
+            print("Error: data must be a pd.DataFrame object")
 
     @property
     def metadata(self):
-        if hasattr(self, "_metadata"):
-            return self._metadata
+        return self._metadata
 
     @metadata.setter
     def metadata(self, value):
         if isinstance(value, dict):
             self._metadata = dict(value)
             return
-        if not hasattr(self, "_metadata"):
-            self._metadata = {}
         if isinstance(value, Iterable):
             if len(value) == 2:
                 self._metadata[value[0]] = value[1]
+
+    @property
+    def history(self):
+        return self._history
+
+    @history.setter
+    def history(self, value):
+        self._history = value
+    
+    def __str__(self):
+        return self.name
 
     ################################################################################
     # methods on spectral data
     
     def resample(self, method="slinear"):
         """ interpolate the data into integer (1nm) wavelengths """
+        self.history.append(functools.partial(self.resample, method))
         METHODS = ('slinear', 'cubic')
         if method not in METHODS:
             msg = " ".join(["ERROR:", method, "not supported.\n"])
@@ -135,7 +168,9 @@ class Spectrum(object):
         self.resampled = True
 
     def stitch(self, method="mean", waves=None, reference=None):
-        METHODS = ('mean', 'jump')
+        """ Stitch the overlapping regions """
+        self.history.append(functools.partial(self.stitch, method, waves, reference))
+        METHODS = ('mean')
         if method not in METHODS:
             msg = " ".join(["ERROR:", method, "not supported.\n"])
             sys.stderr.write(msg)
@@ -144,10 +179,16 @@ class Spectrum(object):
         if method == "mean":
             self.data = self.data.groupby(level=0, axis=0).mean()
 
-        if method == "jump":
-            self.stitch_jump_correct(waves, reference)
+    def jump_correct(self, waves, reference, method="additive"):
+        """ Perform jump correction (no overlap) """
+        if method == "additive":
+            self._jump_correct_additive(waves, reference)
+        else:
+            print(method, "method is not supported")
+            return
 
-    def stitch_jump_correct(self, waves, reference):
+    def _jump_correct_additive(self, waves, reference):
+        """ Perform additive jump correction (ASD) """
         # if asd, get the locations from the metadata
         # stop if overlap exists
         def get_sequence(wave):
