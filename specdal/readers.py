@@ -14,8 +14,7 @@ cols_sed = {
 }
 
 def read(filepath, name=None):
-    """
-    function to call the appropriate reader for file extension
+    """function to call the appropriate reader for file extension
     """
     
     FORMATS = {'.asd':read_asd, '.sig':read_sig, '.sed':read_sed }

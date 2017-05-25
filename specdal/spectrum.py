@@ -6,23 +6,41 @@ from collections import Iterable
 
 class Spectrum(object):
     """
-    A container storing a single spectrum measurement as np.array.
+    A container storing a single spectrum measurement.
 
     Parameters
     -----------
-    name : string
-        Name of the spectrum.
-    data : list of numpy.recarray objects
-        The dataset. numpy.recarray objects
-    resampled : `bool`, optional
-        Indicates whether the spectrum has been resampled to integer wavelengths
-    metadata : dictionary
-        key:value pair for metadata
 
+    name : string
+        Name of the spectrum
+    data : pandas DataFrame
+        Data to store measurements.
+    group : string
+        indicates group. Can be dynamically modified.
+    fmt : string
+        original file format 
+    mask : bool
+        boolean indicating whether spectrum is masked
+    resampled : bool
+        boolean indicating whether spectrum is resampled
+    stitched : bool
+        boolean indicating whether spectrum is stitched
+    metadata : dict
+        dict containing metadata        
+    history : dict
+        dict containing methods called on this object
+
+    Examples
+    --------
     Raises
     ------
     Notes
     -----
+    Spectrum object stores a single spectrum measurement using pandas DataFrame.
+    By convention, the index is named as "wave" and each row represents specific 
+    wavelength. 
+    There can be several columns, usually including "pct_reflect".
+
     See also
     --------
     """
@@ -52,6 +70,25 @@ class Spectrum(object):
     def name(self, value):
         self._name = value
 
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        if isinstance(value, pd.DataFrame):
+            self._data = value
+        else:
+            print("Error: data must be a pd.DataFrame object")
+
+    @property
+    def group(self):
+        return self._group
+
+    @group.setter
+    def group(self, value):
+        self._group = value
+        
     @property
     def fmt(self):
         return self._fmt
@@ -85,25 +122,6 @@ class Spectrum(object):
     @stitched.setter
     def stitched(self, value):
         self._stitched = value
-
-    @property
-    def group(self):
-        return self._group
-
-    @group.setter
-    def group(self, value):
-        self._group = value
-        
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        if isinstance(value, pd.DataFrame):
-            self._data = value
-        else:
-            print("Error: data must be a pd.DataFrame object")
 
     @property
     def metadata(self):
