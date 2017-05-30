@@ -3,7 +3,7 @@ import sys
 import struct
 import numpy as np
 import pandas as pd
-from .spectrum import Spectrum
+from spectrum import Spectrum
 
 # column mapping
 cols_sed = {
@@ -132,6 +132,8 @@ def read_asd(filepath, name=None):
 
             data['pct_reflect'] = data.iloc[:, 1] / data.iloc[:, 0]
 
+            measurement = data['pct_reflect']
+
             # metadata
             meta = {
                 'type':spectrum_type,
@@ -139,7 +141,7 @@ def read_asd(filepath, name=None):
             }
             
             # convert data into spectrum and return
-            return Spectrum(name=name, fmt="asd", data=data, mask=mask, metadata=meta)
+            return Spectrum(name=name, measurement=measurement)
 
 
 def read_sig(filepath, name=None):
@@ -162,7 +164,8 @@ def read_sig(filepath, name=None):
                                          sep="\s+", index_col=0,
                                          header=None, names=colnames
                     )
-                    return Spectrum(name=name, fmt="sig", data=data, metadata=meta)
+                    measurement = data['pct_reflect']
+                    return Spectrum(name=name, measurement=measurement)
                 else:
                     meta[line[0]] = line[1]
 
@@ -196,9 +199,9 @@ def read_sed(filepath, name=None):
                 data.columns = [cols_sed[column] if column in cols_sed else column
                                 for column in data.columns]
                 data = data.set_index("wavelength")
+                measurement = data['pct_reflect']
+                return Spectrum(name=name, measurement=measurement)
                 
-                return Spectrum(name=name, fmt="sed", data=data, mask=mask, metadata=meta)
-
             else:
                 if len(line) > 1:
                     meta[line[0]] = line[1]
