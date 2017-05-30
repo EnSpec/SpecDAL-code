@@ -28,17 +28,19 @@ class StitcherTests(unittest.TestCase):
         
 
     def test_jump_correction2(self):        
-        s2 = s.Spectrum(name="s2", resampled=True)  # two sequence
-        s2.data = pd.DataFrame({"wave": [1.0, 2.0, 3.0, 4.0,
+        data = pd.DataFrame({"wavelength": [1.0, 2.0, 3.0, 4.0,
                                               5.0, 6.0, 7.0, 8.0,
                                               9.0, 10.0, 11.0, 12.0],
                                      "pct_reflect": [1.0, 2.0, 3.0, 4.0,
                                                      10.0, 11.0, 12.0, 13.0,
                                                      8.0, 9.0, 10.0, 11.0]})
-        s2.data = s2.data.set_index("wave")
-        s2.data.plot(y='pct_reflect')
-        s2.stitch(method='jump', waves=[4, 8], reference=0)
-        s2.data.plot(y='pct_reflect')
+        data = data.set_index("wavelength")
+        
+        s2 = s.Spectrum(name="s2", measurement=data["pct_reflect"])  # two sequence
+        
+        s2.measurement.plot(y='pct_reflect')
+        s2.jump_correct(splices=[4, 8], reference=0)
+        s2.measurement.plot(y='pct_reflect')
 
 #         # stitched data for validation
 #         self.s1_st_data = pd.DataFrame({"wave": [1.0, 2.0, 3.0, 4.0],

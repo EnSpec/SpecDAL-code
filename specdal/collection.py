@@ -154,10 +154,11 @@ class Collection(object):
             separator = kwargs["separator"]
             element_inds = kwargs["indices"]
             elements = spectrum.name.split(separator)
-            return '_'.join([elements[i] if i in element_inds else fill
-                             for i in range(len(elements))])
+            return '_'.join([elements[i] if str(i) in element_inds
+                             else fill for i in range(len(elements))])
 
-        KEY_FUN = {"separator": group_by_separator}
+        
+        KEY_FUN = {"separator" : group_by_separator}
         spectrums_sorted = sorted(self.spectrums, key=lambda x: group_by_separator(x))
 
         result = OrderedDict()

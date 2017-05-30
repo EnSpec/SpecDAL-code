@@ -111,9 +111,48 @@ class Spectrum(object):
             self.measurement = self.measurement.groupby(level=0, axis=0).mean()
         pass
 
-    def jump_correct(self):
+    def jump_correct(self, splices, reference, method="additive"):
         """Stitch jumps in measurement for non-overlapping wavelengths"""
-        pass
+        
+        if method == "additive":
+            self._jump_correct_additive(splices, reference)
+        else:
+            print(method, "method is not supported")
+            return
+
+    def _jump_correct_additive(self, splices, reference):
+        """ Perform additive jump correction (ASD) """
+        # if asd, get the locations from the metadata
+        # stop if overlap exists
+        def get_sequence_num(wavelength):
+            """ return the sequence id after cutting at splices """
+            for i, splice in enumerate(splices):
+                if wavelength <= splice:
+                    return i
+            return i+1
+
+        def translate_y(ref, mov, right=True):
+            # translates the mov sequence to stitch with ref sequence
+            if right:
+                diff = ref.iloc[-1] - mov.iloc[0]
+            else:
+                diff = ref.iloc[0] - mov.iloc[-1]
+            mov = mov + diff
+            self.measurement.update(mov)
+            
+        groups = self.measurement.groupby(get_sequence_num)
+
+        for i in range(reference, groups.ngroups-1, 1):
+            # move sequences on the right of reference
+            translate_y(groups.get_group(i),
+                        groups.get_group(i+1),
+                        right=True)
+
+        for i in range(reference, 0, -1):
+            # move sequences on the left of reference
+            translate_y(groups.get_group(i),
+                        groups.get_group(i-1),
+                        right=False)
 
     ##################################################
     # operators

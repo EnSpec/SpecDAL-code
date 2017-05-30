@@ -3,7 +3,7 @@ import sys
 import struct
 import numpy as np
 import pandas as pd
-from spectrum import Spectrum
+from .spectrum import Spectrum
 
 # column mapping
 cols_sed = {
