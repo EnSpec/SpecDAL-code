@@ -1,8 +1,10 @@
 import sys
+import os
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
 from .spectrum import Spectrum
+from .readers import *
 from itertools import groupby
 import copy
 
@@ -100,17 +102,42 @@ class Collection(object):
     ##################################################
     # wrappers for Spectrum methods
 
-    def read(self):
-        pass
-    
-    def resample(self):
+    def read(self, path, ext=[".asd", ".sed", ".sig"],
+             recursive=False):
+        """ read all files in path that matches ext
+        """
+        for dirpath, dirnames, filenames in os.walk(path):
+            if not recursive:
+                # only read given path
+                if dirpath != path:
+                    continue
+            for f in filenames:
+                _, f_ext = os.path.splitext(f)
+                if f_ext not in list(ext):
+                    # skip to next file
+                    continue
+                filepath = os.path.join(path, f)
+                spectrum = read(os.path.abspath(filepath))
+                if spectrum is None:
+                    pass
+                else:
+                    self.add_spectrum(spectrum)
+
+
+    def resample(self, method="slinear"):
+        for spectrum in self.spectrums:
+            spectrum.resample(method=method)
+
+    def stitch(self, method="mean"):
+        for spectrum in self.spectrums:
+            spectrum.stitch(method=method)
         pass
 
-    def stitch(self):
-        pass
-
-    def jump_correct(self):
-        pass
+    def jump_correct(self, splices, reference, method="additive"):
+        for spectrum in self.spectrums:
+            spectrum.jump_correct(splices=splices,
+                                  reference=reference,
+                                  method=method)
 
     ##################################################
     # data operations

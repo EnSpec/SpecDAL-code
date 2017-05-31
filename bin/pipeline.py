@@ -46,10 +46,7 @@ for d in (outdir, figdir, datadir):
 
 # read directory into collection
 c = Collection(name="original")
-for f in os.listdir(os.path.abspath(args.indir)):
-    spec = r.read(os.path.join(os.path.abspath(args.indir), f))
-    if spec is not None:
-        c.add_spectrum(spec)
+c.read(path=args.indir)
 
 # resample
 if args.resampler:
