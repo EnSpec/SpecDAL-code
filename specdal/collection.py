@@ -172,16 +172,18 @@ class Collection(object):
         -------
         A Spectrum object after aggregating by fcn.
         """
-        tmp_name = self.name.split("_")[0:-1] # remove last tag (_orig or _aggr)
-        tmp_name.append(fcn) # add _aggr tag
-        newname = "_".join(tmp_name)
+        
+        newname = self.name + fcn
         measurement = None
         if fcn == "mean":
             measurement = self.data.mean(axis=1)
 
         if fcn == "median":
             measurement = self.data.median(axis=1)
-            
+
+        if fcn == "std":
+            measurement = self.data.std(axis=1)
+                    
         return Spectrum(name=newname, measurement=measurement,
                         measure_type=self.measure_type)
 
@@ -224,7 +226,7 @@ class Collection(object):
             result[coll.name] = coll
 
         if aggr_fcn:
-            assert(aggr_fcn in ["mean", "median"])
+            assert(aggr_fcn in ["mean", "median", "std"])
             newname = "_".join([self.name, aggr_fcn])
             aggr_result = Collection(newname)
             for group_coll in result.values():

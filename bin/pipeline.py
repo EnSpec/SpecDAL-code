@@ -66,14 +66,21 @@ if args.jump_correct:
     
 # group by
 if args.group_by_separator:
-    # get a dictionary containing group collections
+    # get a collection of grouped means
     means = c.group_by(separator=args.group_by_separator[0],
                        aggr_fcn="mean",
                        indices=args.group_by_separator[1:])
+    # get a collection of grouped std
+    stds = c.group_by(separator=args.group_by_separator[0],
+                       aggr_fcn="std",
+                       indices=args.group_by_separator[1:])
 
+
+# add averaged spectrums to original collection
 for spec in means.spectrums:
     c.add_spectrum(spec)
 
+# group_by again to include averaged spectrum in each group
 group_colls = c.group_by(separator=args.group_by_separator[0],
                          indices=args.group_by_separator[1:])
 
@@ -90,6 +97,13 @@ means.plot()
 plt.savefig(os.path.join(figdir, means.name + ".png"),  bbox_inches='tight')
 plt.close()
 means.to_csv(os.path.join(datadir, means.name + ".csv"))
+
+# plot of stds
+stds.plot()
+plt.savefig(os.path.join(figdir, stds.name + ".png"),  bbox_inches='tight')
+plt.close()
+stds.to_csv(os.path.join(datadir, stds.name + ".csv"))
+
 
 # save mask file
 maskpath = os.path.join(outdir, 'mask.csv')
