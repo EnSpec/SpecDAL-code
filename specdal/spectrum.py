@@ -164,3 +164,11 @@ class Spectrum(object):
     
     def __iadd__(self):
         pass
+
+    ##################################################
+    # wrappers for Series functions
+    def plot(self, **kwargs):
+        self.data.plot(**kwargs)
+
+    def to_csv(self, path=None, **kwargs):
+        pd.DataFrame(self.data).transpose().to_csv(path_or_buf=path, **kwargs)

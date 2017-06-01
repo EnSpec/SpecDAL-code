@@ -184,6 +184,12 @@ class Collection(object):
         if fcn == "std":
             measurement = self.data.std(axis=1)
                     
+        if fcn == "min":
+            measurement = self.data.min(axis=1)
+                    
+        if fcn == "max":
+            measurement = self.data.max(axis=1)
+                    
         return Spectrum(name=newname, measurement=measurement,
                         measure_type=self.measure_type)
 
@@ -226,7 +232,7 @@ class Collection(object):
             result[coll.name] = coll
 
         if aggr_fcn:
-            assert(aggr_fcn in ["mean", "median", "std"])
+            assert(aggr_fcn in ["mean", "median", "std", "min", "max"])
             newname = "_".join([self.name, aggr_fcn])
             aggr_result = Collection(newname)
             for group_coll in result.values():
