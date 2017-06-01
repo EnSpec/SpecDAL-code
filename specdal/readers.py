@@ -20,7 +20,7 @@ def read(filepath, name=None):
     FORMATS = {'.asd':read_asd, '.sig':read_sig, '.sed':read_sed }
     
     if name is None:
-        name = os.path.basename(filepath)
+        name = os.path.basename(filepath) + "_orig"
 
     ext = os.path.splitext(filepath)[1]
 

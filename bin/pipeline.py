@@ -49,14 +49,10 @@ c = Collection(name="original")
 c.read(path=args.indir)
 
 # resample
-if args.resampler:
-    for spec in c.spectrums:
-        spec.resample()
-    
+c.resample()
+
 # overlap stitch
-if args.stitcher:
-    for spec in c.spectrums:
-        spec.stitch(method=args.stitcher)
+c.stitch()
 
 # stitch
 if args.jump_correct:
@@ -64,34 +60,37 @@ if args.jump_correct:
     args.jump_correct = list(map(int, args.jump_correct))
     reference = args.jump_correct[0]
     splices = args.jump_correct[1:]
-    
-    # stitch the asd spectrum
-    for spec in c.spectrums:
-        spec.jump_correct(splices=splices, reference=reference)
+
+    # stitch
+    c.jump_correct(splices, reference=reference)
     
 # group by
 if args.group_by_separator:
-    group_colls = c.group_by(separator=args.group_by_separator[0],
-                                indices=args.group_by_separator[1:])
+    # get a dictionary containing group collections
+    means = c.group_by(separator=args.group_by_separator[0],
+                       aggr_fcn="mean",
+                       indices=args.group_by_separator[1:])
 
+for spec in means.spectrums:
+    c.add_spectrum(spec)
 
-means = Collection("group_means") # collection of group means
-for k, v in group_colls.items():
+group_colls = c.group_by(separator=args.group_by_separator[0],
+                         indices=args.group_by_separator[1:])
+
+for group_id, group_coll in group_colls.items():
     # save group plot
-    v.data.plot()
-    plt.savefig(os.path.join(figdir, v.name + ".png"),  bbox_inches='tight')
+    group_coll.plot()
+    plt.savefig(os.path.join(figdir, group_coll.name + ".png"),  bbox_inches='tight')
     plt.close()
     # save group csv
-    v.data.transpose().to_csv(os.path.join(datadir, v.name + ".csv"))
-    # add group mean to means collection
-    means.add_spectrum(v.aggregate("mean"))
+    group_coll.to_csv(os.path.join(datadir, group_coll.name + ".csv"))
 
 # plot of means
-means.data.plot()
+means.plot()
 plt.savefig(os.path.join(figdir, means.name + ".png"),  bbox_inches='tight')
 plt.close()
-means.data.transpose().to_csv(os.path.join(datadir, means.name + ".csv"))
+means.to_csv(os.path.join(datadir, means.name + ".csv"))
 
 # save mask file
-# maskpath = os.path.join(outdir, 'mask.csv')
-# sess.mask.to_csv(maskpath)
+maskpath = os.path.join(outdir, 'mask.csv')
+c.masks.to_csv(maskpath)

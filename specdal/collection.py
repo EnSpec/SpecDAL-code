@@ -37,11 +37,11 @@ class Collection(object):
 
     """
 
-    def __init__(self, name, measure_type="pct_reflect", spectrums=[]):
+    def __init__(self, name, measure_type="pct_reflect", spectrums=[], masks={}):
         self.name = name
         self.measure_type = measure_type
         self.spectrums = spectrums
-        pass
+        self.masks = masks
 
     @property
     def name(self):
@@ -86,18 +86,42 @@ class Collection(object):
             # assert s is Spectrum
             self._spectrums[s.name] = s
 
-    def add_spectrum(self, spectrum):
+    def add_spectrum(self, spectrum, mask=False):
         """add spectrum to the collection"""
         if spectrum.name in self.spectrums_dict:
             # name already exists
             return
         self._spectrums[spectrum.name] = spectrum
+        self.masks_dict[spectrum.name] = False
 
     def remove_spectrum(self, spectrum):
         """remove spectrum from the collection"""
         if spectrum.name in self.spectrums_dict:
             del self._spectrums[spectrum.name]
 
+    @property
+    def masks(self):
+        """Get a dataframe of masks"""
+        # return self._masks
+        return pd.Series(self._masks)
+
+    @property
+    def masks_dict(self):
+        """Get a dictionary of masks"""
+        return self._masks
+
+    @masks.setter
+    def masks(self, value):
+        self._masks = OrderedDict()
+        for name in self.spectrums_dict:
+            # set to false by default
+            self._masks[name] = False
+
+    def set_mask(self, name, value):
+        if name not in self.spectrums_dict:
+            return
+        if value in [True, False]:
+            self._masks[name] = value
 
     ##################################################
     # wrappers for Spectrum methods
@@ -122,7 +146,6 @@ class Collection(object):
                     pass
                 else:
                     self.add_spectrum(spectrum)
-
 
     def resample(self, method="slinear"):
         for spectrum in self.spectrums:
@@ -149,7 +172,9 @@ class Collection(object):
         -------
         A Spectrum object after aggregating by fcn.
         """
-        newname = "_".join([self.name, fcn])
+        tmp_name = self.name.split("_")[0:-1] # remove last tag (_orig or _aggr)
+        tmp_name.append(fcn) # add _aggr tag
+        newname = "_".join(tmp_name)
         measurement = None
         if fcn == "mean":
             measurement = self.data.mean(axis=1)
@@ -162,7 +187,7 @@ class Collection(object):
 
     ##################################################
     # group operations
-    def group_by(self, method="separator", **kwargs):
+    def group_by(self, method="separator", aggr_fcn=None, **kwargs):
         """
         Form groups and return a collection for each group.
 
@@ -171,6 +196,8 @@ class Collection(object):
         OrderedDict consisting of collection object for each group
             key: group name
             value: collection object
+        or
+        Collection of aggregate if aggr_fcn is supplied
 
         Notes
         -----
@@ -184,13 +211,36 @@ class Collection(object):
             return '_'.join([elements[i] if str(i) in element_inds
                              else fill for i in range(len(elements))])
 
-        
         KEY_FUN = {"separator" : group_by_separator}
         spectrums_sorted = sorted(self.spectrums, key=lambda x: group_by_separator(x))
 
+        groups = groupby(spectrums_sorted, KEY_FUN[method])
+
+        # default result
         result = OrderedDict()
-        for g_name, g_spectrums in groupby(spectrums_sorted, KEY_FUN[method]):
+        for g_name, g_spectrums in groups:
             coll = Collection(name=g_name,
                               spectrums=[copy.deepcopy(s) for s in g_spectrums])
             result[coll.name] = coll
-        return result
+
+        if aggr_fcn:
+            assert(aggr_fcn in ["mean", "median"])
+            newname = "_".join([self.name, aggr_fcn])
+            aggr_result = Collection(newname)
+            for group_coll in result.values():
+                aggr_result.add_spectrum(group_coll.aggregate(aggr_fcn))
+            return aggr_result  # single collection of aggregate spectrums
+            
+        return result  # OrderedDict of group collections
+        
+        
+
+
+    ##################################################
+    # wrappers for dataframe functions
+    def plot(self, **kwargs):
+        self.data.plot(**kwargs)
+
+    def to_csv(self, path=None, **kwargs):
+        self.data.transpose().to_csv(path_or_buf=path, **kwargs)
+
