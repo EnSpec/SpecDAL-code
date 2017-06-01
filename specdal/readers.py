@@ -20,7 +20,7 @@ def read(filepath, name=None):
     FORMATS = {'.asd':read_asd, '.sig':read_sig, '.sed':read_sed }
     
     if name is None:
-        name = os.path.basename(filepath) + "_orig"
+        name = os.path.basename(filepath)
 
     ext = os.path.splitext(filepath)[1]
 
@@ -164,7 +164,7 @@ def read_sig(filepath, name=None):
                                          sep="\s+", index_col=0,
                                          header=None, names=colnames
                     )
-                    measurement = data['pct_reflect']
+                    measurement = data['pct_reflect']/100
                     return Spectrum(name=name, measurement=measurement)
                 else:
                     meta[line[0]] = line[1]
@@ -199,7 +199,7 @@ def read_sed(filepath, name=None):
                 data.columns = [cols_sed[column] if column in cols_sed else column
                                 for column in data.columns]
                 data = data.set_index("wavelength")
-                measurement = data['pct_reflect']
+                measurement = data['pct_reflect']/100
                 return Spectrum(name=name, measurement=measurement)
                 
             else:
