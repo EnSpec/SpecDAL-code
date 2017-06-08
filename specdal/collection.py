@@ -188,7 +188,7 @@ class Collection(object):
 
     ##################################################
     # group operations
-    def group_by(self, method="separator", aggr_fcn=None, **kwargs):
+    def group_by(self, method="separator", **kwargs):
         """
         Form groups and return a collection for each group.
 
@@ -205,17 +205,17 @@ class Collection(object):
         The result is a deepcopy of the original collection and 
         spectrums.
         """
-        def group_by_separator(spectrum, fill="."):
+        def group_by_separator(spectrum, fill=".", **kwargs):
             separator = kwargs["separator"]
             element_inds = kwargs["indices"]
             elements = spectrum.name.split(separator)
-            return '_'.join([elements[i] if str(i) in element_inds
-                             else fill for i in range(len(elements))])
+            result = '_'.join([elements[i] if i in element_inds else
+                          fill for i in range(len(elements))])
+            return result
 
         KEY_FUN = {"separator" : group_by_separator}
-        spectrums_sorted = sorted(self.spectrums, key=lambda x: group_by_separator(x))
-
-        groups = groupby(spectrums_sorted, KEY_FUN[method])
+        spectrums_sorted = sorted(self.spectrums, key=lambda x: group_by_separator(x, **kwargs))
+        groups = groupby(spectrums_sorted, lambda x : KEY_FUN[method](x, **kwargs))
 
         # default result
         result = OrderedDict()
@@ -224,17 +224,7 @@ class Collection(object):
                               spectrums=[copy.deepcopy(s) for s in g_spectrums])
             result[coll.name] = coll
 
-        if aggr_fcn:
-            assert(aggr_fcn in ["mean", "median", "std", "min", "max"])
-            newname = "_".join([self.name, aggr_fcn])
-            aggr_result = Collection(newname)
-            for group_coll in result.values():
-                aggr_result.add_spectrum(group_coll.aggregate(aggr_fcn))
-            return aggr_result  # single collection of aggregate spectrums
-            
         return result  # OrderedDict of group collections
-        
-        
 
 
     ##################################################
@@ -244,4 +234,5 @@ class Collection(object):
 
     def to_csv(self, path=None, **kwargs):
         self.data.transpose().to_csv(path_or_buf=path, **kwargs)
+
 
