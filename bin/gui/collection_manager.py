@@ -11,6 +11,7 @@ from specdal.spectrum import Spectrum
 from specdal.collection import Collection
 from specdal import readers as r
 from collections import OrderedDict
+import re
 
 class CollectionManager(tk.Frame):
     def __init__(self, parent, data=None):
@@ -21,6 +22,9 @@ class CollectionManager(tk.Frame):
 
         if isinstance(data, Collection):
             self.add_collection(data)
+
+        # for testing
+        # tk.Button(self, text="test", command=lambda : print(self.get_selection())).pack()
 
     def add_collection(self, collection):
         """ Add a collection to the manager """
@@ -57,10 +61,36 @@ class CollectionManager(tk.Frame):
         # add all spectrums in collection
         for spectrum in collection.spectrums:
             self.treeview.insert(coll_name, tk.END,
-                                 coll_name+spectrum.name, # unique within coll
+                                 (coll_name, spectrum.name), # unique within coll
                                  text=spectrum.name,
                                  values=("", False))
 
+    def get_selection(self):
+        """ 
+        Get the selected collection and spectra.
+
+        Returns
+        -------
+        list of tuples (collection.name, spectrum.name)
+
+        Notes
+        -----
+        id of collection: collection.name
+        id of spectrum: {collection.name} spectrum.name
+        """
+        result = []
+        selections = self.treeview.selection()
+        for selection in selections:
+            match = re.match("\{(.*)\} (.*)", selection)
+            if match:
+                # spectrum
+                collection, spectrum = match.groups()
+            else:
+                # collection
+                collection, spectrum = selection, None
+            result.append((collection, spectrum))
+        return result
+    
     def create_gui(self, parent):
         self.scrollbar = ttk.Scrollbar(self)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
