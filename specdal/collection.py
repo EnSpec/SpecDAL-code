@@ -164,34 +164,27 @@ class Collection(object):
 
     ##################################################
     # data operations
-    def aggregate(self, fcn):
-        """
-        Aggregate the spectrum objects by applying fcn.
 
-        Returns
-        -------
-        A Spectrum object after aggregating by fcn.
-        """
-        
-        newname = self.name + fcn
-        measurement = None
-        if fcn == "mean":
-            measurement = self.data.mean(axis=1)
+    # aggregate functions
+    @property
+    def mean(self):
+        self.data.mean(axis=1)
 
-        if fcn == "median":
-            measurement = self.data.median(axis=1)
+    @property
+    def median(self):
+        self.data.median(axis=1)
 
-        if fcn == "std":
-            measurement = self.data.std(axis=1)
-                    
-        if fcn == "min":
-            measurement = self.data.min(axis=1)
-                    
-        if fcn == "max":
-            measurement = self.data.max(axis=1)
-                    
-        return Spectrum(name=newname, measurement=measurement,
-                        measure_type=self.measure_type)
+    @property
+    def min(self):
+        self.data.min(axis=1)
+
+    @property
+    def max(self):
+        self.data.max(axis=1)
+
+    @property
+    def std(self):
+        self.data.std(axis=1)
 
     ##################################################
     # group operations
