@@ -44,7 +44,6 @@ class Viewer(tk.Frame):
 
     def update(self):
         """ Update the plot """
-        print("updating plot")
         self.ax.clear()
         self.data.plot(ax=self.ax)
         self.ax.legend().remove()

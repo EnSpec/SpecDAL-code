@@ -99,6 +99,11 @@ class Collection(object):
         if spectrum.name in self.spectrums_dict:
             del self._spectrums[spectrum.name]
 
+    def get_spectrum(self, spec_name):
+        """ get spectrum by name """
+        if spec_name in self.spectrums_dict:
+            return self.spectrums_dict[spec_name]
+
     @property
     def masks(self):
         """Get a dataframe of masks"""

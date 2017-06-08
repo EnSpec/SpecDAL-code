@@ -34,29 +34,74 @@ class Session(tk.Tk):
         self.viewer.grid(row=1, column=1)
 
         # for testing purposes
-        tk.Button(self.mw, text="read", command = lambda : self.test_read()).grid(row=2, column=0)
-        tk.Button(self.mw, text="plot", command = lambda : self.test_plot()).grid(row=2, column=1)
+        tk.Button(self.mw, text="plot", command = lambda : self.test_plot()).grid(column=0)
+        tk.Button(self.mw, text="read test", command = lambda : self.test_read()).grid(column=0)
+        tk.Button(self.mw, text="read directory", command = lambda : self.read_dir()).grid(column=0)
+        tk.Button(self.mw, text="read files", command = lambda : self.read_files()).grid(column=0)
 
     def test_read(self):
         """ reads collections for testing """
         c = Collection("Test Collection")
         c.read("../../data/asd/")
         self.add_collection(c)
-        # c2 = Collection("Test Collection 2")
-        # c2.read("../../data/sig/")
-        # c2.resample()
-        # c2.stitch()
-        # self.add_collection(c2)
+        c2 = Collection("Test Collection 2")
+        c2.read("../../data/sig/")
+        c2.resample()
+        c2.stitch()
+        self.add_collection(c2)
 
     def test_plot(self):
         """ TODO: plots selection for testing """
+        selections = self.collection_manager.get_selection()
+        for coll_name, spec_name in selections:
+            if spec_name is None:
+                # collection
+                collection = self.collections[coll_name]
+                self.viewer.data = collection
+            else:
+                # spectrum
+                spectrum = self.collections[coll_name].get_spectrum(spec_name)
+                self.viewer.data = spectrum
+            self.viewer.update()
+            
         pass
 
-    def read_dir(self, directory, recursive=False):
-        pass
+    def read_dir(self):
+        # ask for directory
+        directory = filedialog.askdirectory()
+        if len(directory) == 0:
+            return
+        # ask for name
+        name = "Test Collection" + str(len(self.collections))
+        # ask for recursion
+        recursive = False
+        # ask for filetype
+        c = Collection(name)
+        c.read(directory, recursive=False)
+
+        # add to manager
+        self.add_collection(c)
 
     def read_files(self, files=[]):
-        pass
+        # ask for files
+        files = filedialog.askopenfilenames()
+        if len(files) == 0:
+            return
+
+        # ask for name
+        coll_name = "Test Collection" + str(len(self.collections))
+        if coll_name in self.collections:
+            c = self.collections[coll_name]
+        else:
+            c = Collection(coll_name)
+            self.add_collection(c)
+        
+        for f in files:
+            spectrum = r.read(f)
+            if spectrum is not None:
+                c.add_spectrum(spectrum)
+
+        self.collection_manager.update(coll_name)
 
     @property
     def collections(self):
