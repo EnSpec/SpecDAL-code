@@ -60,8 +60,9 @@ class CollectionManager(tk.Frame):
         self.treeview.delete(*self.treeview.get_children(coll_name))
         # add all spectrums in collection
         for spectrum in collection.spectrums:
+            key = "{" + coll_name + "} " + spectrum.name
             self.treeview.insert(coll_name, tk.END,
-                                 (coll_name, spectrum.name), # unique within coll
+                                 key, # unique within coll
                                  text=spectrum.name,
                                  values=("", False))
 
