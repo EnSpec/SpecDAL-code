@@ -199,6 +199,8 @@ def read_sed(filepath, name=None):
                 data.columns = [cols_sed[column] if column in cols_sed else column
                                 for column in data.columns]
                 data = data.set_index("wavelength")
+                if "pct_reflect" not in  data.columns.values:
+                    return
                 measurement = data['pct_reflect']/100
                 return Spectrum(name=name, measurement=measurement)
                 
