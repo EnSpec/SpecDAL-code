@@ -6,6 +6,7 @@ from collections import OrderedDict
 from .spectrum import Spectrum
 from .readers import *
 from itertools import groupby
+from matplotlib import pyplot as plt
 import copy
 
 class Collection(object):
@@ -168,23 +169,23 @@ class Collection(object):
     # aggregate functions
     @property
     def mean(self):
-        self.data.mean(axis=1)
+        return Spectrum(name=self.name + "_mean", measurement=self.data.mean(axis=1))
 
     @property
     def median(self):
-        self.data.median(axis=1)
+        return Spectrum(name=self.name + "_median", measurement=self.data.median(axis=1))
 
     @property
     def min(self):
-        self.data.min(axis=1)
+        return Spectrum(name=self.name + "_min", measurement=self.data.min(axis=1))
 
     @property
     def max(self):
-        self.data.max(axis=1)
+        return Spectrum(name=self.name + "_max", measurement=self.data.max(axis=1))
 
     @property
     def std(self):
-        self.data.std(axis=1)
+        return Spectrum(name=self.name + "_std", measurement=self.data.std(axis=1))
 
     ##################################################
     # group operations
@@ -229,10 +230,20 @@ class Collection(object):
 
     ##################################################
     # wrappers for dataframe functions
-    def plot(self, **kwargs):
-        self.data.plot(**kwargs)
+    def plot(self, stats=[], **kwargs):
+        fig, ax = plt.subplots(1, 1)
+        self.data.plot(ax=ax, **kwargs)
+        for stat in stats:
+            if stat == "mean":
+                self.mean.plot(ax=ax)
+            if stat == "median":
+                self.median.plot(ax=ax)
+            if stat == "min":
+                self.min.plot(ax=ax)
+            if stat == "max":
+                self.max.plot(ax=ax)
+            if stat == "std":
+                self.std.plot(ax=ax)
 
     def to_csv(self, path=None, **kwargs):
         self.data.transpose().to_csv(path_or_buf=path, **kwargs)
-
-

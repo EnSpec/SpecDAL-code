@@ -168,7 +168,7 @@ class Spectrum(object):
     ##################################################
     # wrappers for Series functions
     def plot(self, **kwargs):
-        self.data.plot(**kwargs)
+        self.measurement.plot(**kwargs)
 
     def to_csv(self, path=None, **kwargs):
-        pd.DataFrame(self.data).transpose().to_csv(path_or_buf=path, **kwargs)
+        pd.DataFrame(self.measurement).transpose().to_csv(path_or_buf=path, **kwargs)
