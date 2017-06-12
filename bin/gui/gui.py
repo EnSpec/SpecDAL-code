@@ -53,17 +53,19 @@ class Session(tk.Tk):
     def test_plot(self):
         """ TODO: plots selection for testing """
         selections = self.collection_manager.get_selection()
+        plot_collection = Collection(name="Selection")
         for coll_name, spec_name in selections:
             if spec_name is None:
                 # collection
                 collection = self.collections[coll_name]
-                self.viewer.data = collection
+                for spectrum in collection.spectrums:
+                    plot_collection.add_spectrum(spectrum)
             else:
                 # spectrum
                 spectrum = self.collections[coll_name].get_spectrum(spec_name)
-                self.viewer.data = spectrum
-            self.viewer.update()
-            
+                plot_collection.add_spectrum(spectrum)
+        self.viewer.data = plot_collection
+        self.viewer.update()
         pass
 
     def read_dir(self):
