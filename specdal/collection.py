@@ -95,10 +95,10 @@ class Collection(object):
         self._spectrums[spectrum.name] = spectrum
         self.masks_dict[spectrum.name] = False
 
-    def remove_spectrum(self, spectrum):
+    def remove_spectrum(self, spec_name):
         """remove spectrum from the collection"""
-        if spectrum.name in self.spectrums_dict:
-            del self._spectrums[spectrum.name]
+        if spec_name in self.spectrums_dict:
+            del self._spectrums[spec_name]
 
     def get_spectrum(self, spec_name):
         """ get spectrum by name """
@@ -236,18 +236,6 @@ class Collection(object):
     ##################################################
     # wrappers for dataframe functions
     def plot(self, stats=[], **kwargs):
-<<<<<<< HEAD
-        title = self.name
-        if "title" in kwargs:
-            title = kwargs["title"]
-            del kwargs["title"]
-        fig, ax = plt.subplots(1, 1)
-        self.data.plot(title=title, ax=ax, **kwargs)
-=======
-<<<<<<< Updated upstream
-        fig, ax = plt.subplots(1, 1)
-        self.data.plot(ax=ax, **kwargs)
-=======
         # parse kwargs
         title = self.name
         if "title" in kwargs:
@@ -260,8 +248,6 @@ class Collection(object):
             del kwargs["ax"]
 
         self.data.plot(title=title, ax=ax, **kwargs)
->>>>>>> Stashed changes
->>>>>>> dev
         for stat in stats:
             if stat == "mean":
                 self.mean.plot(ax=ax)
