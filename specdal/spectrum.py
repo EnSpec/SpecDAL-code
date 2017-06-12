@@ -175,4 +175,4 @@ class Spectrum(object):
         self.measurement.plot(title=title, **kwargs)
 
     def to_csv(self, path=None, **kwargs):
-        pd.DataFrame(self.data).transpose().to_csv(path_or_buf=path, **kwargs)
+        pd.DataFrame(self.measurement).transpose().to_csv(path_or_buf=path, **kwargs)

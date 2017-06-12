@@ -48,13 +48,6 @@ class CollectionTests(unittest.TestCase):
         mean = self.c.aggregate(fcn="mean")
         median = self.c.aggregate(fcn="median")
 
-    def test_group_by_separator(self):
-        groups = self.c.group_by(separator="_", indices=[0, 2])
-        for _, group in groups.items():
-            print("group:", group.name)
-            for spec in group.spectrums:
-                print("spectrum:", spec.name)
-
 
 def main():
     unittest.main()

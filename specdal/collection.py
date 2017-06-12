@@ -6,6 +6,7 @@ from collections import OrderedDict
 from .spectrum import Spectrum
 from .readers import *
 from itertools import groupby
+from matplotlib import pyplot as plt
 import copy
 
 class Collection(object):
@@ -169,38 +170,31 @@ class Collection(object):
 
     ##################################################
     # data operations
-    def aggregate(self, fcn):
-        """
-        Aggregate the spectrum objects by applying fcn.
 
-        Returns
-        -------
-        A Spectrum object after aggregating by fcn.
-        """
-        
-        newname = self.name + fcn
-        measurement = None
-        if fcn == "mean":
-            measurement = self.data.mean(axis=1)
+    # aggregate functions
+    @property
+    def mean(self):
+        return Spectrum(name=self.name + "_mean", measurement=self.data.mean(axis=1))
 
-        if fcn == "median":
-            measurement = self.data.median(axis=1)
+    @property
+    def median(self):
+        return Spectrum(name=self.name + "_median", measurement=self.data.median(axis=1))
 
-        if fcn == "std":
-            measurement = self.data.std(axis=1)
-                    
-        if fcn == "min":
-            measurement = self.data.min(axis=1)
-                    
-        if fcn == "max":
-            measurement = self.data.max(axis=1)
-                    
-        return Spectrum(name=newname, measurement=measurement,
-                        measure_type=self.measure_type)
+    @property
+    def min(self):
+        return Spectrum(name=self.name + "_min", measurement=self.data.min(axis=1))
+
+    @property
+    def max(self):
+        return Spectrum(name=self.name + "_max", measurement=self.data.max(axis=1))
+
+    @property
+    def std(self):
+        return Spectrum(name=self.name + "_std", measurement=self.data.std(axis=1))
 
     ##################################################
     # group operations
-    def group_by(self, method="separator", aggr_fcn=None, **kwargs):
+    def group_by(self, method="separator", **kwargs):
         """
         Form groups and return a collection for each group.
 
@@ -217,17 +211,17 @@ class Collection(object):
         The result is a deepcopy of the original collection and 
         spectrums.
         """
-        def group_by_separator(spectrum, fill="."):
+        def group_by_separator(spectrum, fill=".", **kwargs):
             separator = kwargs["separator"]
             element_inds = kwargs["indices"]
             elements = spectrum.name.split(separator)
-            return '_'.join([elements[i] if str(i) in element_inds
-                             else fill for i in range(len(elements))])
+            result = '_'.join([elements[i] if i in element_inds else
+                          fill for i in range(len(elements))])
+            return result
 
         KEY_FUN = {"separator" : group_by_separator}
-        spectrums_sorted = sorted(self.spectrums, key=lambda x: group_by_separator(x))
-
-        groups = groupby(spectrums_sorted, KEY_FUN[method])
+        spectrums_sorted = sorted(self.spectrums, key=lambda x: group_by_separator(x, **kwargs))
+        groups = groupby(spectrums_sorted, lambda x : KEY_FUN[method](x, **kwargs))
 
         # default result
         result = OrderedDict()
@@ -236,28 +230,29 @@ class Collection(object):
                               spectrums=[copy.deepcopy(s) for s in g_spectrums])
             result[coll.name] = coll
 
-        if aggr_fcn:
-            assert(aggr_fcn in ["mean", "median", "std", "min", "max"])
-            newname = "_".join([self.name, aggr_fcn])
-            aggr_result = Collection(newname)
-            for group_coll in result.values():
-                aggr_result.add_spectrum(group_coll.aggregate(aggr_fcn))
-            return aggr_result  # single collection of aggregate spectrums
-            
         return result  # OrderedDict of group collections
-        
-        
 
 
     ##################################################
     # wrappers for dataframe functions
-    def plot(self, **kwargs):
+    def plot(self, stats=[], **kwargs):
         title = self.name
         if "title" in kwargs:
             title = kwargs["title"]
             del kwargs["title"]
-        self.data.plot(title=title, **kwargs)
+        fig, ax = plt.subplots(1, 1)
+        self.data.plot(title=title, ax=ax, **kwargs)
+        for stat in stats:
+            if stat == "mean":
+                self.mean.plot(ax=ax)
+            if stat == "median":
+                self.median.plot(ax=ax)
+            if stat == "min":
+                self.min.plot(ax=ax)
+            if stat == "max":
+                self.max.plot(ax=ax)
+            if stat == "std":
+                self.std.plot(ax=ax)
 
     def to_csv(self, path=None, **kwargs):
         self.data.transpose().to_csv(path_or_buf=path, **kwargs)
-
