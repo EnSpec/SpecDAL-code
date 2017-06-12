@@ -231,8 +231,23 @@ class Collection(object):
     ##################################################
     # wrappers for dataframe functions
     def plot(self, stats=[], **kwargs):
+<<<<<<< Updated upstream
         fig, ax = plt.subplots(1, 1)
         self.data.plot(ax=ax, **kwargs)
+=======
+        # parse kwargs
+        title = self.name
+        if "title" in kwargs:
+            title = kwargs["title"]
+            del kwargs["title"]
+
+        _, ax = plt.subplots(1, 1)
+        if "ax" in kwargs:
+            ax = kwargs["ax"]
+            del kwargs["ax"]
+
+        self.data.plot(title=title, ax=ax, **kwargs)
+>>>>>>> Stashed changes
         for stat in stats:
             if stat == "mean":
                 self.mean.plot(ax=ax)
