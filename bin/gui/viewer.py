@@ -38,17 +38,30 @@ class Viewer(tk.Frame):
     def data(self, value):
         if isinstance(value, Collection) or isinstance(value, Spectrum):
             self._data = value
-            self.update()
+            self.update(new_lim=True)
         else:
             self._data = None
 
-    def update(self):
+    def update(self, new_lim=False):
         """ Update the plot """
         if self.data is None:
             return
+        
+        # save limits
+        if new_lim == False:
+            xlim = self.ax.get_xlim()
+            ylim = self.ax.get_ylim()
+
+        # plot
         self.ax.clear()
         self.data.plot(ax=self.ax)
         self.ax.legend().remove()
+
+        # reapply limits
+        if new_lim == False:
+            self.ax.set_xlim(xlim) 
+            self.ax.set_ylim(ylim)
+        
         self.canvas.draw()
 
 
