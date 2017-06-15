@@ -38,10 +38,10 @@ git branch dev
 #+end_src
 * Features
 At its core, =SpecDAL= package provides python functions and data
-structures to manipulate spectroscopy data in [[./specdal/]]. Python users
+structures to manipulate spectroscopy data in [[./specdal/][specdal]]. Python users
 can import the modules directly to write their own scripts.
 
 We also provide interface via command-line pipeline and GUI in
-[[./bin]]. 
+[[./bin][bin]]. 
 
 ** Example usage (TODO)

@@ -1,17 +1,17 @@
 
 # Table of Contents
 
-1.  [Introduction](#org1d02f35)
-2.  [Installation](#orge5c139a)
-    1.  [Prerequisite](#org792f7ed)
-    2.  [Installing SpecDAL](#org51cac1f)
-    3.  [Development version](#orgfe486fb)
-3.  [Features](#orgd65317d)
-    1.  [Example usage (TODO)](#org7a71c92)
+1.  [Introduction](#org3d52f24)
+2.  [Installation](#org2b3c105)
+    1.  [Prerequisite](#org87bde83)
+    2.  [Installing SpecDAL](#org0ea568a)
+    3.  [Development version](#orgef8bdb2)
+3.  [Features](#org94f8671)
+    1.  [Example usage (TODO)](#org91f90c3)
 
 
 
-<a id="org1d02f35"></a>
+<a id="org3d52f24"></a>
 
 # Introduction
 
@@ -21,7 +21,7 @@ spectremeters. `SpecDAL` provides useful functions for processing and
 aggregating the data. 
 
 
-<a id="orge5c139a"></a>
+<a id="org2b3c105"></a>
 
 # Installation
 
@@ -29,7 +29,7 @@ Currently, `SpecDAL` can be installed from Github. We plan to make it
 available via Python's `pip` installer in the future.
 
 
-<a id="org792f7ed"></a>
+<a id="org87bde83"></a>
 
 ## Prerequisite
 
@@ -39,7 +39,7 @@ available via Python's `pip` installer in the future.
 3.  (Windows only) Install [Git-bash](https://git-for-windows.github.io/).
 
 
-<a id="org51cac1f"></a>
+<a id="org0ea568a"></a>
 
 ## Installing SpecDAL
 
@@ -55,7 +55,7 @@ available via Python's `pip` installer in the future.
         git pull origin master
 
 
-<a id="orgfe486fb"></a>
+<a id="orgef8bdb2"></a>
 
 ## Development version
 
@@ -67,19 +67,19 @@ following code:
     git branch dev
 
 
-<a id="orgd65317d"></a>
+<a id="org94f8671"></a>
 
 # Features
 
 At its core, `SpecDAL` package provides python functions and data
-structures to manipulate spectroscopy data in <./specdal/>. Python users
+structures to manipulate spectroscopy data in [specdal](./specdal/). Python users
 can import the modules directly to write their own scripts.
 
 We also provide interface via command-line pipeline and GUI in
-<./bin>. 
+[bin](./bin). 
 
 
-<a id="org7a71c92"></a>
+<a id="org91f90c3"></a>
 
 ## Example usage (TODO)
 
