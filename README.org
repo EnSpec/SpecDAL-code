@@ -1,0 +1,47 @@
+#+TITLE: SpecDAL - README
+#+AUTHOR: Young
+#+options: ^:nil num:2
+
+* Introduction
+=SpecDAL= is a Python package for loading and manipulating field
+spectroscopy data. It currently supports readers for ASD, SVC, and PSR
+spectremeters. =SpecDAL= provides useful functions for processing and
+aggregating the data. 
+* Installation
+Currently, =SpecDAL= can be installed from Github. We plan to make it
+available via Python's =pip= installer in the future.
+** Prerequisite
+1. Install Python 3
+   - packages: pandas, numpy, matplotlib, etc.
+2. Install Git
+3. (Windows only) Install [[https://git-for-windows.github.io/][Git-bash]].
+** Installing SpecDAL
+0. Open terminal or Git-bash and navigate to the desired directory
+   using =cd <directory>=.
+1. The following command will create a directory =SpecDAL-code=
+   containing =SpecDAL=:
+   #+begin_src
+   git clone https://github.com/EnSpec/SpecDAL-code.git
+   #+end_src
+2. To update the package, go to =SpecDAL-code= directory and run the
+   following command:
+   #+begin_src
+   git pull origin master
+   #+end_src
+** Development version
+Development version is maintained in =dev= branch and production
+version in =master=. For the latest development version, run the
+following code:
+#+begin_src
+git fetch origin
+git branch dev
+#+end_src
+* Features
+At its core, =SpecDAL= package provides python functions and data
+structures to manipulate spectroscopy data in [[./specdal/]]. Python users
+can import the modules directly to write their own scripts.
+
+We also provide interface via command-line pipeline and GUI in
+[[./bin]]. 
+
+** Example usage (TODO)
